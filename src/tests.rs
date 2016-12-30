@@ -461,3 +461,37 @@ fn scratch() {
         let _ = writeln!(&mut io::stderr(), "{:?}", row);
     }
 }
+
+fn test_plain_enum() {
+    #[derive(RustcEncodable, RustcDecodable, Debug, PartialEq, Eq, Clone, Copy)]
+    enum Hey {
+        A,
+        B,
+        C,
+    }
+
+    let foo = (Hey::A, 9, Hey::C);
+    let mut out = Writer::from_memory();
+    out.encode(foo).ok();
+    let mem = out.as_string();
+    println!("mem == {:?}", mem);
+    let mut _in = Reader::from_string(mem).has_headers(false);
+    for entry in _in.decode::<(Hey, usize, Hey)>() {
+        let entry = entry.unwrap();
+        println!("Got: {:?}", entry);
+        assert_eq!(foo, entry);
+    }
+}
+
+#[cfg(plain_enum_parsing)]
+#[test]
+fn plain_enum_works() {
+    test_plain_enum();
+}
+
+#[cfg(not(plain_enum_parsing))]
+#[test]
+#[should_panic]
+fn plain_enum_fails() {
+    test_plain_enum();
+}

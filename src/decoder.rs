@@ -106,6 +106,7 @@ impl serialize::Decoder for Decoded {
             where F: FnOnce(&mut Decoded) -> Result<T> {
         f(self)
     }
+    #[cfg(not(plain_enum_parsing))]
     fn read_enum_variant<T, F>(&mut self, names: &[&str], mut f: F)
                               -> Result<T>
             where F: FnMut(&mut Decoded, usize) -> Result<T> {
@@ -116,6 +117,20 @@ impl serialize::Decoder for Decoded {
                 Ok(v) => return Ok(v),
                 Err(_) => { self.push_string(cur); }
             }
+        }
+        self.err(format!(
+            "Could not load value into any variant in {:?}", names))
+    }
+    #[cfg(plain_enum_parsing)]
+    fn read_enum_variant<T, F>(&mut self, names: &[&str], mut f: F)
+                              -> Result<T>
+            where F: FnMut(&mut Decoded, usize) -> Result<T> {
+        let enum_name = try!(self.pop_string());
+        for i in 0..names.len() {
+            if names[i] != enum_name {
+                continue;
+            }
+            return f(self, i);
         }
         self.err(format!(
             "Could not load value into any variant in {:?}", names))

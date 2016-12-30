@@ -1,6 +1,6 @@
 [package]
 name = "csv"
-version = "0.14.7"  #:version
+version = "0.14.8"  #:version
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 description = "CSV parsing with automatic type based decoding and encoding."
 documentation = "http://burntsushi.net/rustdoc/csv/"
@@ -36,3 +36,6 @@ lto = true  # this doesn't seem to work... why?
 [profile.release]
 opt-level = 3
 lto = true
+
+[features]
+plain_enum_parsing = []
